@@ -1,0 +1,14 @@
+### pycharm ###
+.idea
+*.iws
+*.iml
+*.ipr
+/out/
+
+/venv/
+/logs/
+/models/
+/out-puts/
+/upload/
+*/__pycache__/*
+/__pycache__/

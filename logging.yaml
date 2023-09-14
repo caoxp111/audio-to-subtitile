@@ -1,0 +1,53 @@
+version: 1
+# 将信息传播到配置文件的跟日志记录器中
+disable_existing_loggers: False
+
+# 格式化器
+formatters:
+  file: # 格式化器id, 自定义
+    datefmt: '%Y-%m-%d %H:%M:%S'
+    format: '%(asctime)s.%(msecs)03d|%(levelname)s|[%(process)d,%(thread)d]|[%(filename)s,%(lineno)d,%(funcName)s]|%(message)s'
+  console:
+    # 使用特殊键'()'传入格式化器, 下面的配置会作为参数传入, 同理, 处理器、过滤器也支持自定义对象
+    (): 'colorlog.ColoredFormatter' # => colorlog.ColoredFormatter(**kwargs)
+    datefmt: '%Y-%m-%d %H:%M:%S'
+    format: '%(white)s%(asctime)s %(reset)s%(green)s[%(levelname)s %(process)d]%(reset)s %(reset)s%(log_color)s%(message)s'
+    log_colors:
+      DEBUG: green
+      INFO: cyan
+      WARNING: yellow
+      ERROR: red
+      CRITICAL: bold_red
+
+# 处理程序
+handlers:
+  console:
+    class: logging.StreamHandler # 这是处理程序类的完整名称
+    formatter: console  # 处理程序所对应格式化器的ID
+    level: DEBUG  # 处理程序的级别
+    # filters: [allow_foo]  # 由处理程序所对应过滤器的ID 组成的列表
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: file
+    level: INFO
+    filename: logs/all.log
+    maxBytes: 52428800 # 1024*1024*50
+    backupCount: 10
+
+# 日志记录器
+loggers:
+  app:
+    level: DEBUG # 这里的优先级高
+    handlers:
+      - console
+      - file
+    # 打开日志记录器
+    propagate: False
+
+
+# 根记录器配置
+root:
+  level: DEBUG
+  handlers:
+    - console
+  propagate: no

@@ -1,0 +1,21 @@
+env: dev
+
+dev:
+  upload_root_dir: './upload'
+  out_puts_dir: './out-puts'
+  chunk_dir: '/chunk'
+  file_category:
+    video_suffix: [ 'mp4','avi' ]
+    audio_suffix: [ 'mp3','wav' ]
+    pdf_suffix: [ 'pdf' ]
+test:
+  file_category:
+    video_suffix: [ 'mp4','avi' ]
+    audio_suffix: [ 'mp3','wav' ]
+    pdf_suffix: [ 'pdf' ]
+
+prod:
+  file_category:
+    video_suffix: [ 'mp4','avi' ]
+    audio_suffix: [ 'mp3','wav' ]
+    pdf_suffix: [ 'pdf' ]

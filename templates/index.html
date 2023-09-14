@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>字幕提取</title>
+    <script src="//cdn.bootcdn.net/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin-left: 20px;
+        }
+
+        .container {
+            display: flex;
+            height: 100px;
+        }
+
+        h1 {
+            margin-left: 200px;
+            color: #4CAF50;
+        }
+
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 200px;
+        }
+
+        #fileInput {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        #link-text {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 300px;
+            height: 25px;
+        }
+
+        #model-type {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 200px;
+        }
+
+        .upload-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .link-extract-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        progress {
+            width: 405px;
+            height: 30px;
+            margin-bottom: -5px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        #progress-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .left-div {
+            flex: 1;
+            padding: 20px;
+            margin-left: 5%;
+        }
+
+        .right-div {
+            flex: 1;
+            padding: 10px;
+            margin-left: -15%;
+        }
+
+        #subtitle-textarea {
+            width: 60%;
+            height: 500px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            resize: vertical;
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #spend-text {
+            width: 54%;
+            height: 20px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            resize: vertical;
+            margin-top: 20px;
+        }
+
+        .refresh-icon {
+            cursor: pointer;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 20%;
+            font-size: 20px;
+            width: 35px;
+            height: 35px;
+            padding: 0;
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .refresh-icon:hover {
+            background-color: #f1f1f1;
+        }
+
+        .refresh-icon:active {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+<h1>字幕提取</h1>
+<div class="container">
+    <div class="left-div">
+        <div>
+            <label>
+                <span>切换模型：</span>
+                <select id="model-type" onchange="refreshModel()">
+                    <option value="tiny" selected>tiny</option>
+                    <option value="base">base</option>
+                    <option value="small">small</option>
+                    <option value="medium">medium</option>
+                    <option value="large-v1">large-v1</option>
+                    <option value="large-v2">large-v2</option>
+                </select>&nbsp;
+                <button id="refresh-model-button" class="refresh-icon" onclick="refreshModel()">🔄</button>
+            </label>
+        </div>
+        <br/>
+        <div>
+            <h3>----------------------------视频或音频文件转录----------------------------</h3>
+        </div>
+        <br/>
+        <div>
+            <label>
+                <span>导入文件：</span>
+                <input type="file" id="fileInput">&nbsp;&nbsp;
+                <button class="upload-button" onclick="start()">上传文件</button>
+            </label>
+        </div>
+        <br/>
+        <div>
+            <progress id="progress-bar" value="0" max="100"></progress>
+            <label id="progress-label">0%</label>
+        </div>
+        <br/>
+        <div>
+            <h3>----------------------------视频或音频链接转录----------------------------</h3>
+        </div>
+        <br/>
+        <div>
+            <label>
+                <span>视频链接：</span>
+                <input id="link-text" type="text"/>&nbsp;&nbsp;
+                <button class="link-extract-button" onclick="submitLink()">转录</button>
+            </label>
+        </div>
+    </div>
+    <div class="right-div">
+        <label>
+            <span style="margin-right: 50%">转录</span>
+            <button onclick="copySubtitle()">复制内容</button>
+            <br/>
+            <textarea id="subtitle-textarea" placeholder="" disabled=""></textarea>
+        </label>
+        <br/>
+        <label>
+            <span>耗时：</span>
+            <input id="spend-text" type="text" readonly/>
+        </label>
+    </div>
+</div>
+<script>
+    init();
+
+    function init() {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", "/model/getCurModelName");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+                if (response.code === 1) {
+                    console.log("当前模型是：" + response.result)
+                    let modelTypeSelect = document.getElementById('model-type');
+                    modelTypeSelect.value = response.result;
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function start() {
+        clearTextAndTextarea();
+
+        let progressBar = document.getElementById("progress-bar");
+        let progressLabel = document.getElementById("progress-label");
+
+        let CHUNK_SIZE = 8 * 1024 * 1024; // 8MB
+        let fileInput = document.getElementById("fileInput");
+        let file = fileInput.files[0];
+        let fileSize = file.size;
+        let chunkCount = Math.ceil(fileSize / CHUNK_SIZE);
+        let chunkNum = 0;
+        let uid = getUid();
+        console.log(uid);
+        uploadNextChunk();
+
+        function uploadNextChunk() {
+            if (chunkNum >= chunkCount) {
+                console.log("上传完成");
+                merge();
+                return;
+            }
+            let start = chunkNum * CHUNK_SIZE;
+            let end = Math.min(fileSize, start + CHUNK_SIZE);
+            let chunk = file.slice(start, end);
+            let formData = new FormData();
+            formData.append("fileChuck", chunk);
+            formData.append("uid", uid);
+            formData.append("chunkNum", chunkNum);
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/file/uploadChunk");
+            xhr.upload.addEventListener("progress", function (event) {
+                if (event.lengthComputable) {
+                    let progress = (chunkNum + event.loaded / event.total) / chunkCount;
+                    progress = (progress * 50).toFixed(2);
+                    setProgress(progress);
+                }
+            });
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    console.log("第" + (chunkNum + 1) + "片上传完成，总数量：" + chunkCount);
+                    chunkNum++;
+                    uploadNextChunk();
+                }
+            };
+            xhr.send(formData);
+        }
+
+        function merge() {
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/file/merge");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    if (response.code === 1) {
+                        mergeProgress();
+                    }
+                    console.log("开始合并");
+                }
+            };
+            let data = {
+                "uid": uid,
+                "fileName": file.name,
+                "fileSize": file.size
+            };
+            let jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
+
+        async function mergeProgress() {
+            await sleep(1000);
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/file/merge/progress");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = async function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    if (response.code === 1) {
+                        let progress = response.result.progress;
+                        progress = (50 + progress / 2).toFixed(2);
+                        setProgress(progress);
+                        if (progress >= 100) {
+                            progressLabel.innerHTML = "上传完成";
+                            submitFile(uid, file.name)
+                        } else {
+                            await mergeProgress();
+                        }
+                    }
+                }
+            };
+            let data = {
+                "uid": uid,
+                "fileName": file.name,
+                "fileSize": file.size
+            };
+            let jsonData = JSON.stringify(data);
+            xhr.send(jsonData);
+        }
+
+        function setProgress(progress) {
+            console.log("当前进度：" + progress + "%");
+            progressBar.value = progress;
+            progressLabel.innerHTML = progress + "%";
+        }
+    }
+
+    let socket;
+
+    function connect() {
+        let subtitleTextarea = document.getElementById("subtitle-textarea");
+        if (socket === undefined) {
+            socket = io.connect("/process");
+        }
+        socket.on('connect', function () {
+            console.log("连接成功：" + socket.id)
+        });
+        socket.on('disconnect', function () {
+            console.log('连接断开');
+            // 停止重新连接
+            socket.io.reconnection(false);
+            socket = undefined;
+        });
+        socket.on('subtitle', function (result) {
+            if (result.status === 1) {
+                displayMessage(result.text);
+                displayProgress("生成中：" + result.progress + "%");
+            } else if (result.status === 2) {
+                displayProgress(result.spend + "秒");
+            }
+        });
+
+        function displayMessage(message) {
+            subtitleTextarea.value += message + "\n";
+            subtitleTextarea.scrollTop = subtitleTextarea.scrollHeight;
+        }
+    }
+
+    function submitFile(uid, fileName) {
+        if (socket === undefined) {
+            connect()
+        }
+        socket.emit('submit_file', {"uid": uid, "fileName": fileName});
+        displayProgress("生成中：0%");
+    }
+
+    function submitLink() {
+        clearTextAndTextarea();
+        let linkText = document.getElementById("link-text");
+        let fileUrl = linkText.value;
+        if (socket === undefined) {
+            connect()
+        }
+        let uid = getUid();
+        socket.emit('submit_link', {"uid": uid, "fileUrl": fileUrl});
+        displayProgress("生成中：0%");
+    }
+
+    function copySubtitle() {
+        let subtitleTextarea = document.getElementById("subtitle-textarea");
+        subtitleTextarea.select();
+        navigator.clipboard.writeText(subtitleTextarea.value)
+    }
+
+    function displayProgress(content) {
+        let spendText = document.getElementById("spend-text");
+        spendText.value = content;
+    }
+
+    function clearTextAndTextarea() {
+        let subtitleTextarea = document.getElementById("subtitle-textarea");
+        let spendText = document.getElementById("spend-text");
+        subtitleTextarea.value = "";
+        spendText.value = "";
+    }
+
+    function refreshModel() {
+        let refreshModelButton = document.getElementById("refresh-model-button");
+        refreshModelButton.disabled = true;
+        let modelTypeSelect = document.getElementById("model-type");
+        modelTypeSelect.disabled = true;
+        let modelName = modelTypeSelect.value;
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/model/refresh");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText);
+                if (response.code === 1) {
+                    console.log("刷新模型成功");
+                    modelTypeSelect.disabled = false;
+                    refreshModelButton.disabled = false;
+                }
+            }
+        };
+        let data = {
+            "modelName": modelName
+        };
+        let jsonData = JSON.stringify(data);
+        xhr.send(jsonData);
+    }
+
+    function getUid() {
+        let today = new Date();
+        let year = today.getFullYear();
+        let month = (today.getMonth() + 1).toString().padStart(2, '0');
+        let day = today.getDate().toString().padStart(2, '0');
+        let dateStr = `${year}-${month}-${day}`;
+        return dateStr + "/" + uuid.v1().replace(/-/g, "");
+    }
+
+    async function sleep(timeout) {
+        await new Promise(resolve => setTimeout(resolve, timeout));
+    }
+</script>
+</body>
+</html>

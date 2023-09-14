@@ -1,0 +1,8 @@
+Flask==2.3.3
+Flask-SocketIO==5.3.5
+faster-whisper==0.7.1
+colorlog==6.7.0
+PyYAML==6.0.1
+requests==2.31.0
+urllib3==2.0.4
+simple-websocket==0.10.1
