@@ -1,15 +1,16 @@
-from flask import request, Blueprint
+from flask import request, Blueprint, send_file
 import logging
+import os
 
 from modules.upload import upload
 from modules.util import response_util
 
 logger = logging.getLogger('app')
 
-upload_route = Blueprint('upload_route', __name__)
+file_route = Blueprint('file_route', __name__)
 
 
-@upload_route.route('/file/uploadChunk', methods=['POST'])
+@file_route.route('/file/uploadChunk', methods=['POST'])
 def file_upload_chunk():
     file_chuck = request.files['fileChuck']
     uid = request.form['uid']
@@ -22,7 +23,7 @@ def file_upload_chunk():
         return response_util.failed_response1("上传分片失败")
 
 
-@upload_route.route('/file/merge', methods=['POST'])
+@file_route.route('/file/merge', methods=['POST'])
 def file_merge():
     params = request.get_json()
     uid = params['uid']
@@ -36,7 +37,7 @@ def file_merge():
         return response_util.failed_response1("合并分片失败")
 
 
-@upload_route.route('/file/merge/progress', methods=['POST'])
+@file_route.route('/file/merge/progress', methods=['POST'])
 def file_merge_progress():
     params = request.get_json()
     uid = params['uid']
@@ -45,3 +46,11 @@ def file_merge_progress():
     logger.info(f'uid= {uid}, fileName= {file_name}, fileSize={file_size}')
     progress = upload.merge_progress(uid, file_name, file_size)
     return response_util.success_response({"progress": progress})
+
+
+@file_route.route('/file/<path:filename>')
+def download_file(filename):
+    file_path = './' + filename
+    if not os.path.exists(file_path) or not os.path.isfile(file_path):
+        return response_util.failed_response1('未找到对应文件')
+    return send_file(file_path)

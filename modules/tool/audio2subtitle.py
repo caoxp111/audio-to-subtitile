@@ -35,7 +35,7 @@ def generate_subtitle(socketio, namespace, audio_filename, srt_file_name, is_sav
     spend_time = round(end_time - start_time, 6)
     logger.info(f'文件【{audio_filename}】生成字幕完成，耗时：{spend_time}秒')
     response_util.ws_response(socketio, namespace, ResponseEvent.SUBTITLE.value, socket_id,
-                              {'status': 2, 'spend': spend_time, 'progress': 100})
+                              {'status': 2, 'spend': spend_time, 'progress': 100, 'srt_path': srt_file_name[1:]})
 
 
 def url_generate_subtitle(socketio, namespace, audio_url, audio_filename, srt_file_name, is_save_subtitle, socket_id):

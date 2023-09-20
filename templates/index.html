@@ -197,8 +197,9 @@
     </div>
     <div class="right-div">
         <label>
-            <span style="margin-right: 50%">转录</span>
+            <span style="margin-right: 41%">转录</span>
             <button onclick="copySubtitle()">复制内容</button>
+            <button onclick="downloadSubtitle()">下载字幕文件</button>
             <br/>
             <textarea id="subtitle-textarea" placeholder="" disabled=""></textarea>
         </label>
@@ -211,6 +212,7 @@
 </div>
 <script>
     init();
+    let downloadSubtitleUrl = '';
 
     function init() {
         let xhr = new XMLHttpRequest();
@@ -362,6 +364,8 @@
                 displayProgress("生成中：" + result.progress + "%");
             } else if (result.status === 2) {
                 displayProgress(result.spend + "秒");
+                downloadSubtitleUrl = '/file' + result.srt_path;
+                console.log('字幕文件地址：' + downloadSubtitleUrl);
             }
         });
 
@@ -397,12 +401,37 @@
         navigator.clipboard.writeText(subtitleTextarea.value)
     }
 
+    function downloadSubtitle() {
+        if (downloadSubtitleUrl === '') {
+            alert("字幕未识别完成");
+            return;
+        }
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', downloadSubtitleUrl, true);
+        xhr.responseType = 'blob';
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                let blob = xhr.response;
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = downloadSubtitleUrl.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        };
+        xhr.send();
+    }
+
     function displayProgress(content) {
         let spendText = document.getElementById("spend-text");
         spendText.value = content;
     }
 
     function clearTextAndTextarea() {
+        downloadSubtitleUrl = '';
         let subtitleTextarea = document.getElementById("subtitle-textarea");
         let spendText = document.getElementById("spend-text");
         subtitleTextarea.value = "";

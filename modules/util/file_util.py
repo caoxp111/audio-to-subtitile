@@ -40,3 +40,7 @@ def get_chunk_dir():
 
 def get_out_puts_dir():
     return conf.env_conf['out_puts_dir']
+
+
+def get_upload_root_dir():
+    return conf.env_conf['upload_root_dir']

@@ -34,6 +34,10 @@ Metadata:
 
 4.填入视频连接，ffmpeg提取视频中的音频，提取字幕
 
+5.srt字幕文件下载 
+
+6.音视频、字幕文件定期清理
+
 ![alt text](./templates/images/index.jpg)
 
 **目录划分：**
@@ -56,12 +60,6 @@ pip install -r requirements.txt
 配置conf.yaml
 
 启动执行：app.py
-
-**后期新增**：
-
-1.srt字幕文件下载 
-
-2.音视频、字幕文件定期清理
 
 **容器部署：**
 

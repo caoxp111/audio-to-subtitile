@@ -33,6 +33,7 @@ handlers:
     filename: logs/all.log
     maxBytes: 52428800 # 1024*1024*50
     backupCount: 10
+    encoding: utf-8
 
 # 日志记录器
 loggers:
