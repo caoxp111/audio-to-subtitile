@@ -11,7 +11,7 @@ formatters:
     # 使用特殊键'()'传入格式化器, 下面的配置会作为参数传入, 同理, 处理器、过滤器也支持自定义对象
     (): 'colorlog.ColoredFormatter' # => colorlog.ColoredFormatter(**kwargs)
     datefmt: '%Y-%m-%d %H:%M:%S'
-    format: '%(white)s%(asctime)s.%(msecs)03d %(reset)s%(green)s%(levelname)s %(reset)s%(green)s[%(processName)s:%(process)d,%(threadName)s:%(thread)d]%(reset)s %(reset)s%(green)s[%(filename)s,%(lineno)d,%(funcName)s]%(reset)s %(reset)s%(log_color)s%(message)s'
+    format: '%(white)s%(asctime)s.%(msecs)03d %(reset)s%(green)s%(levelname)s %(reset)s%(green)s[%(processName)s:%(process)d,%(threadName)s:%(thread)d]%(reset)s %(reset)s%(green)s[%(filename)s,%(lineno)d,%(funcName)s]: %(reset)s%(reset)s%(log_color)s%(message)s'
     log_colors:
       DEBUG: green
       INFO: cyan
