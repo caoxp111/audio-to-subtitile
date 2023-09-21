@@ -1,6 +1,7 @@
 import logging
 import re
 from urllib.parse import unquote
+from tqdm import tqdm
 
 import requests
 
@@ -59,13 +60,24 @@ def get_filename(headers, file_extension):
 
 def download(file_url, file_name):
     try:
-        response = requests.get(file_url)
+        response = requests.get(file_url, stream=True)
         if response.status_code != 200:
             logging.error(f"请求链接失败：{file_url}")
             return False
+        total_size = int(response.headers.get('content-length', 0))
+        chunk_size = 1024
+        progress_bar = tqdm(total=total_size, unit='B', unit_scale=True, desc=file_name)
     except Exception as e:
         logging.error(f"无效链接：{file_url}，异常：{e}")
         return False
     with open(file_name, "wb") as f:
-        f.write(response.content)
+        for chunk in response.iter_content(chunk_size):
+            f.write(chunk)
+            progress_bar.update(len(chunk))
+    progress_bar.close()
     return True
+
+
+if __name__ == '__main__':
+    download('https://mooc1vod.stu.126.net/nos/mp4/2016/08/25/1004859044_a39cb8c0ec284089b723dcba2955cb52_sd.mp4',
+             '1.mp4')

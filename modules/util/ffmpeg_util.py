@@ -17,7 +17,7 @@ def video2audio(video_path_or_url, audio_filename):
         start_time = time.time()
         subprocess.run(ffmpeg_cmd, check=True)
         end_time = time.time()
-        logger.info(f'提取视频【{audio_filename}】中的音频文件完成，耗时：{(end_time - start_time):.6f}秒')
+        logger.info(f'提取视频【{video_path_or_url}】中的音频文件【{audio_filename}】完成，耗时：{(end_time - start_time):.6f}秒')
         return True
     except Exception as e:
         logger.error(f'提取视频中的音频文件失败：{e}')

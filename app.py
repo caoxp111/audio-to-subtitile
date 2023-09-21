@@ -41,4 +41,5 @@ if __name__ == '__main__':
     # audio2subtitle.generate_subtitle(
     #     "./upload/audio/2023-08-25/3e0a6d30434111eea41a4b35c6cc4059/nos_mp4_2014_07_15_513024_sd.mp3", True,
     #     "./out-puts/2023-08-25/3e0a6d30434111eea41a4b35c6cc4059/nos_mp4_2014_07_15_513024_sd.srt")
-    socketio.run(app, host='0.0.0.0', port=8181, allow_unsafe_werkzeug=True)
+    #     allow_unsafe_werkzeug=True,
+    socketio.run(app, host='0.0.0.0', port=8181)

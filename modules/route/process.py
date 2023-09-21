@@ -4,7 +4,7 @@ import threading
 import logging
 
 from modules.tool import audio2subtitle, video2subtitle
-from modules.util.const_util import FileCategory, FILE_PATH_SEPARATOR, SRT_EXTENSION, MP3_EXTENSION
+from modules.util.const_util import FileCategory, FILE_PATH_SEPARATOR, SRT_EXTENSION, MP3_EXTENSION, MP4_EXTENSION
 from modules.util import file_util, url_util
 
 logger = logging.getLogger('app')
@@ -31,10 +31,9 @@ class ProcessNamespace(Namespace):
                          args=(
                              self.socketio, self.namespace, audio_url, audio_path, srt_path, True, socket_id,)).start()
 
-    def video_url_extract_subtitle(self, video_url, audio_path, srt_path, socket_id):
-        threading.Thread(target=video2subtitle.url_generate_subtitle,
-                         args=(
-                             self.socketio, self.namespace, video_url, audio_path, srt_path, True, socket_id,)).start()
+    def video_url_extract_subtitle(self, video_url, video_path, audio_path, srt_path, socket_id):
+        threading.Thread(target=video2subtitle.url_generate_subtitle, args=(
+            self.socketio, self.namespace, video_url, video_path, audio_path, srt_path, True, socket_id,)).start()
 
     def on_connect(self):
         socket_id = request.sid
@@ -80,12 +79,14 @@ class ProcessNamespace(Namespace):
         logger.info(f'提交任务参数，socket_id: {socket_id}, uid: {uid}, file_url: {file_url}')
         category, file_name = url_util.get_link_file_category_and_filename(file_url)
         if FileCategory.VIDEO == category:
+            video_file_dir = file_util.get_file_dir(FileCategory.VIDEO)
             audio_file_dir = file_util.get_file_dir(FileCategory.AUDIO)
             file_name_no_ext = file_util.get_filename_no_ext(file_name)
+            video_path = video_file_dir + FILE_PATH_SEPARATOR + uid + FILE_PATH_SEPARATOR + file_name_no_ext + MP4_EXTENSION
             audio_path = audio_file_dir + FILE_PATH_SEPARATOR + uid + FILE_PATH_SEPARATOR + file_name_no_ext + MP3_EXTENSION
             srt_path = file_util.get_out_puts_dir() + FILE_PATH_SEPARATOR + uid + FILE_PATH_SEPARATOR + file_name_no_ext + SRT_EXTENSION
             # 先转音频，再生成字幕
-            self.video_url_extract_subtitle(file_url, audio_path, srt_path, socket_id, )
+            self.video_url_extract_subtitle(file_url, video_path, audio_path, srt_path, socket_id, )
         elif FileCategory.AUDIO == category:
             file_dir = file_util.get_file_dir(category)
             audio_path = file_dir + FILE_PATH_SEPARATOR + uid + FILE_PATH_SEPARATOR + file_name

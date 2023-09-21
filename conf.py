@@ -7,7 +7,7 @@ env_conf = None
 
 def env_config(env_config_file):
     env = os.environ.get("env", "dev")
-    print("当前环境变量是" + env)
+    print("当前环境是：" + env)
     global env_conf
     if env_conf is None:
         with open(env_config_file, 'rb') as f:
