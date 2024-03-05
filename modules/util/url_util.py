@@ -6,7 +6,7 @@ from tqdm import tqdm
 import requests
 
 from modules.util import random_util
-from modules.util.const_util import FileCategory, MP4_EXTENSION, MP3_EXTENSION, PDF_EXTENSION
+from modules.util.const_util import FileCategory, MP4_EXTENSION, WAV_EXTENSION, PDF_EXTENSION
 
 logger = logging.getLogger('app')
 
@@ -38,7 +38,7 @@ def get_file_category_and_filename(headers):
     if content_type.startswith('video'):
         return FileCategory.VIDEO, get_filename(headers, MP4_EXTENSION)
     elif content_type.startswith('audio'):
-        return FileCategory.AUDIO, get_filename(headers, MP3_EXTENSION)
+        return FileCategory.AUDIO, get_filename(headers, WAV_EXTENSION)
     elif content_type.startswith('pdf'):
         return FileCategory.PDF, get_filename(headers, PDF_EXTENSION)
     else:

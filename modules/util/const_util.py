@@ -2,7 +2,8 @@ from enum import Enum
 
 FILE_PATH_SEPARATOR = '/'
 SRT_EXTENSION = '.srt'
-MP3_EXTENSION = '.mp3'
+# MP3_EXTENSION = '.mp3'
+WAV_EXTENSION = '.wav'
 MP4_EXTENSION = '.mp4'
 PDF_EXTENSION = '.pdf'
 
