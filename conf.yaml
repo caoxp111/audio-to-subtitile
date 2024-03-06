@@ -1,6 +1,8 @@
 env: dev
 
 dev:
+  # 1:whisper;2:faster-whisper
+  asr_type: 1
   upload_root_dir: './upload'
   out_puts_dir: './out-puts'
   chunk_dir: '/chunk'
@@ -9,12 +11,22 @@ dev:
     audio_suffix: [ 'mp3','wav' ]
     pdf_suffix: [ 'pdf' ]
 test:
+  # 1:whisper;2:faster-whisper
+  asr_type: 1
+  upload_root_dir: './upload'
+  out_puts_dir: './out-puts'
+  chunk_dir: '/chunk'
   file_category:
     video_suffix: [ 'mp4','avi' ]
     audio_suffix: [ 'mp3','wav' ]
     pdf_suffix: [ 'pdf' ]
 
 prod:
+  # 1:whisper;2:faster-whisper
+  asr_type: 1
+  upload_root_dir: './upload'
+  out_puts_dir: './out-puts'
+  chunk_dir: '/chunk'
   file_category:
     video_suffix: [ 'mp4','avi' ]
     audio_suffix: [ 'mp3','wav' ]
